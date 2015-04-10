@@ -15,8 +15,8 @@ sealed trait MyList[+A] {
     @tailrec
     def _foldLeft(current: B, src: MyList[A]): B = {
       src match {
-        case MyNil              => current
         case MyCons(head, tail) => _foldLeft(f(current, head), tail)
+        case MyNil              => current
       }
     }
     _foldLeft(z, this)
