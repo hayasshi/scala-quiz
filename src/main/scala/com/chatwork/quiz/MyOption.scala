@@ -29,7 +29,7 @@ sealed trait MyOption[+A] {
    * @tparam B 新しい型
    * @return 新しい [[MyOption]]
    */
-  def map[B](f: A => B): MyOption[B] = ???
+  def map[B](f: A => B): MyOption[B] = flatMap(value => MyOption(f(value)))
 
   /**
    * 値が存在する場合に、値の変換を行う。
@@ -38,7 +38,12 @@ sealed trait MyOption[+A] {
    * @tparam B 新しい型
    * @return 新しい [[MyOption]]
    */
-  def flatMap[B](f: A => MyOption[B]): MyOption[B] = ???
+  def flatMap[B](f: A => MyOption[B]): MyOption[B] = {
+    this match {
+      case MyNone        => MyNone
+      case MySome(value) => f(value)
+    }
+  }
 
   /**
    * 値が存在する場合に、値をフィルタリングする。
@@ -46,7 +51,12 @@ sealed trait MyOption[+A] {
    * @param f フィルターのための述語関数
    * @return 新しい [[MyOption]]
    */
-  def filter(f: A => Boolean): MyOption[A] = ???
+  def filter(f: A => Boolean): MyOption[A] = {
+    this match {
+      case MyNone        => MyNone
+      case MySome(value) => if (f(value)) MySome(value) else MyNone
+    }
+  }
 
   /**
    * 格納された値を返す。値がない場合は指定された値を返す。
@@ -55,7 +65,12 @@ sealed trait MyOption[+A] {
    * @tparam B 新しい要素型
    * @return 値
    */
-  def getOrElse[B >: A](elseValue: B): B = ???
+  def getOrElse[B >: A](elseValue: B): B = {
+    this match {
+      case MyNone        => elseValue
+      case MySome(value) => value
+    }
+  }
 
   /**
    * 値が存在しない場合に、指定した式を評価し返す。
@@ -64,7 +79,12 @@ sealed trait MyOption[+A] {
    * @tparam B 新しい要素型
    * @return elseValueを評価した値
    */
-  def orElse[B >: A](elseValue: => MyOption[B]): MyOption[B] = ???
+  def orElse[B >: A](elseValue: => MyOption[B]): MyOption[B] = {
+    this match {
+      case MyNone        => elseValue
+      case MySome(value) => MySome(value)
+    }
+  }
 
 }
 
@@ -73,9 +93,9 @@ sealed trait MyOption[+A] {
  */
 case object MyNone extends MyOption[Nothing] {
 
-  def get: Nothing = ???
+  def get: Nothing = throw new NoSuchElementException("MyNone value is nothing.")
 
-  def isEmpty: Boolean = ???
+  def isEmpty: Boolean = true
 
 }
 
@@ -87,9 +107,9 @@ case object MyNone extends MyOption[Nothing] {
  */
 case class MySome[+A](value: A) extends MyOption[A] {
 
-  def get: A = ???
+  def get: A = value
 
-  def isEmpty: Boolean = ???
+  def isEmpty: Boolean = false
 
 }
 
@@ -105,6 +125,6 @@ object MyOption {
    * @tparam A 値の型
    * @return [[MyOption]]
    */
-  def apply[A](value: A): MyOption[A] = ???
+  def apply[A](value: A): MyOption[A] = if (value != null) MySome(value) else MyNone
 
 }
