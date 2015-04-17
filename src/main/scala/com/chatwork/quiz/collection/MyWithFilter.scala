@@ -1,8 +1,8 @@
 package com.chatwork.quiz.collection
 
-sealed trait MyWithFilter[+A] {
+sealed trait MyListWithFilter[+A] {
 
-  def withFilter(f: A => Boolean): MyWithFilter[A] = MyNilWithFilter
+  def withFilter(f: A => Boolean): MyListWithFilter[A] = MyNilWithFilter
 
   def map[B](f: A => B): MyList[B] = MyNil
 
@@ -10,9 +10,9 @@ sealed trait MyWithFilter[+A] {
 
 }
 
-case class MyConsWithFilter[A](mc: MyCons[A], mf: A => Boolean) extends MyWithFilter[A] {
+case class MyConsWithFilter[A](mc: MyCons[A], mf: A => Boolean) extends MyListWithFilter[A] {
 
-  override def withFilter(f: A => Boolean): MyWithFilter[A] = MyConsWithFilter(mc, (x: A) => mf(x) && f(x))
+  override def withFilter(f: A => Boolean): MyListWithFilter[A] = MyConsWithFilter(mc, (x: A) => mf(x) && f(x))
 
   override def map[B](f: A => B): MyList[B] = {
     mc.foldRight(MyNil: MyList[B]) { (element, current) =>
@@ -30,4 +30,4 @@ case class MyConsWithFilter[A](mc: MyCons[A], mf: A => Boolean) extends MyWithFi
 
 }
 
-object MyNilWithFilter extends MyWithFilter[Nothing]
+object MyNilWithFilter extends MyListWithFilter[Nothing]
