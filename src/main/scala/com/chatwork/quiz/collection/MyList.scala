@@ -23,7 +23,7 @@ sealed trait MyList[+A] {
   }
 
   // Hard:   条件 - foldLeftを使って実装してください。
-  def foldRight[B](z: B)(f: (A, B) => B): B = reverse.foldLeft(z)((current, element) => f(element, current))
+  def foldRight[B](z: B)(f: (A, B) => B): B = foldLeft((b: B) => b)((current, element) => current.compose(f(element, _)))(z)
 
   // Normal
   def ::[B >: A](b: B): MyList[B] = MyCons(b, this)
@@ -44,7 +44,7 @@ sealed trait MyList[+A] {
   def filter(f: A => Boolean): MyList[A] = foldRight(MyNil: MyList[A])((element, current) => if (f(element)) MyCons(element, current) else current)
 
   // Hard:   条件 - 中間リストを生成しないように実装してください。
-  def withFilter(f: A => Boolean): MyWithFilter[A] = {
+  def withFilter(f: A => Boolean): MyListWithFilter[A] = {
     this match {
       case x: MyCons[A] => MyConsWithFilter(x, f)
       case MyNil        => MyNilWithFilter
