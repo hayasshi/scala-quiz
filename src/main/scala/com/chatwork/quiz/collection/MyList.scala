@@ -8,40 +8,40 @@ import scala.annotation.tailrec
 sealed trait MyList[+A] {
 
   // Easy
-  def length: Int = foldLeft(0)((current, _) => current + 1)
+  def length: Int = foldLeft(0)((b, _) => b + 1)
 
   // Normal
   def foldLeft[B](z: B)(f: (B, A) => B): B = {
     @tailrec
-    def _foldLeft(current: B, src: MyList[A]): B = {
-      src match {
-        case MyCons(head, tail) => _foldLeft(f(current, head), tail)
-        case MyNil              => current
+    def _foldLeft(b: B, next: MyList[A]): B = {
+      next match {
+        case MyCons(head, tail) => _foldLeft(f(b, head), tail)
+        case MyNil              => b
       }
     }
     _foldLeft(z, this)
   }
 
   // Hard:   条件 - foldLeftを使って実装してください。
-  def foldRight[B](z: B)(f: (A, B) => B): B = foldLeft((b: B) => b)((current, element) => current.compose(f(element, _)))(z)
+  def foldRight[B](z: B)(f: (A, B) => B): B = foldLeft((b: B) => b)((b, a) => b.compose(f(a, _)))(z)
 
   // Normal
   def ::[B >: A](b: B): MyList[B] = MyCons(b, this)
 
   // Normal
-  def reverse: MyList[A] = foldLeft(MyNil: MyList[A])((current, element) => MyCons(element, current))
+  def reverse: MyList[A] = foldLeft(MyNil: MyList[A])((b, a) => MyCons(a, b))
 
   // Normal
   def ++[B >: A](b: MyList[B]): MyList[B] = foldRight(b) { _ :: _ }
 
   // Normal
-  def map[B](f: A => B): MyList[B] = foldRight(MyNil: MyList[B])((element, current) => f(element) :: current)
+  def map[B](f: A => B): MyList[B] = foldRight(MyNil: MyList[B])((a, b) => f(a) :: b)
 
   // Normal
-  def flatMap[B](f: A => MyList[B]): MyList[B] = foldRight(MyNil: MyList[B])((element, current) => f(element) ++ current)
+  def flatMap[B](f: A => MyList[B]): MyList[B] = foldRight(MyNil: MyList[B])((a, b) => f(a) ++ b)
 
   // Normal
-  def filter(f: A => Boolean): MyList[A] = foldRight(MyNil: MyList[A])((element, current) => if (f(element)) MyCons(element, current) else current)
+  def filter(f: A => Boolean): MyList[A] = foldRight(MyNil: MyList[A])((a, b) => if (f(a)) MyCons(a, b) else b)
 
   // Hard:   条件 - 中間リストを生成しないように実装してください。
   def withFilter(f: A => Boolean): MyListWithFilter[A] = {
@@ -62,8 +62,8 @@ sealed trait MyList[+A] {
   // Normal
   def startsWith[B >: A](prefix: MyList[B]): Boolean = {
     @tailrec
-    def _startsWith(base: MyList[A], prefix: MyList[B]): Boolean = {
-      (base, prefix) match {
+    def _startsWith(a: MyList[A], b: MyList[B]): Boolean = {
+      (a, b) match {
         case (MyCons(h1, t1), MyCons(h2, t2)) => if (h1 == h2) _startsWith(t1, t2) else false
         case (MyCons(_, _), MyNil)            => true
         case (MyNil, MyCons(_, _))            => false
@@ -85,6 +85,6 @@ object MyList {
   def empty[A]: MyList[A] = MyNil
 
   // Normal
-  def apply[A](as: A*): MyList[A] = as.foldRight(MyNil: MyList[A])((element, current) => MyCons(element, current))
+  def apply[A](as: A*): MyList[A] = as.foldRight(MyNil: MyList[A])((a, b) => MyCons(a, b))
 
 }
