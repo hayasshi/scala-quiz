@@ -13,13 +13,13 @@ sealed trait MyList[+A] {
   // Normal
   def foldLeft[B](z: B)(f: (B, A) => B): B = {
     @tailrec
-    def _foldLeft(b: B, next: MyList[A]): B = {
+    def go(b: B, next: MyList[A]): B = {
       next match {
-        case MyCons(head, tail) => _foldLeft(f(b, head), tail)
+        case MyCons(head, tail) => go(f(b, head), tail)
         case MyNil              => b
       }
     }
-    _foldLeft(z, this)
+    go(z, this)
   }
 
   // Hard:   条件 - foldLeftを使って実装してください。
@@ -62,15 +62,15 @@ sealed trait MyList[+A] {
   // Normal
   def startsWith[B >: A](prefix: MyList[B]): Boolean = {
     @tailrec
-    def _startsWith(a: MyList[A], b: MyList[B]): Boolean = {
+    def go(a: MyList[A], b: MyList[B]): Boolean = {
       (a, b) match {
-        case (MyCons(h1, t1), MyCons(h2, t2)) => if (h1 == h2) _startsWith(t1, t2) else false
+        case (MyCons(h1, t1), MyCons(h2, t2)) => if (h1 == h2) go(t1, t2) else false
         case (MyCons(_, _), MyNil)            => true
         case (MyNil, MyCons(_, _))            => false
         case (MyNil, MyNil)                   => true
       }
     }
-    _startsWith(this, prefix)
+    go(this, prefix)
   }
 
 }
